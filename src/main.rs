@@ -1,4 +1,4 @@
-use hello_web::{ThreadPool, handle::handle_connection};
+use hello_web::{ThreadPool, handle_connection};
 use std::net::TcpListener;
 
 fn main() {

@@ -1,6 +1,8 @@
 use std::sync::{Arc, Mutex, mpsc};
 use std::thread;
 
+pub use crate::handle::handle_connection;
+
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
 enum Message {
