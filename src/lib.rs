@@ -94,6 +94,7 @@ pub mod handle {
     use std::net::TcpStream;
     use std::thread;
     use std::time::Duration;
+
     pub fn handle_connection(mut stream: TcpStream) {
         let mut buffer: [u8; 1024] = [0; 1024];
         stream.read(&mut buffer).unwrap();
