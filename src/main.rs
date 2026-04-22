@@ -9,7 +9,10 @@ fn main() {
         let stream = stream.unwrap();
 
         pool.execute(|| {
-            handle_connection(stream);
+            if let Err(e) = handle_connection(stream) {
+                println!("Error occured when handling connection: {} ", e);
+                std::process::exit(1);
+            }
         })
     }
 }

@@ -90,28 +90,33 @@ impl Worker {
 
 pub mod handle {
     use std::fs;
-    use std::io::{Write, prelude::*};
+    use std::io::{Error, prelude::*};
     use std::net::TcpStream;
     use std::thread;
     use std::time::Duration;
 
-    pub fn handle_connection(mut stream: TcpStream) {
+    pub fn handle_connection(mut stream: TcpStream) -> Result<(), Error> {
         let mut buffer: [u8; 1024] = [0; 1024];
-        stream.read(&mut buffer).unwrap();
+        let bytes_read = stream.read(&mut buffer)?;
+
+        if bytes_read == 0 {
+            return Ok(());
+        }
 
         let get = b"GET / HTTP/1.1\r\n";
         let sleep = b"GET /sleep HTTP/1.1\r\n";
+        let req = &buffer[..bytes_read];
 
-        let (status_line, filename) = if buffer.starts_with(get) {
+        let (status_line, filename) = if req.starts_with(get) {
             ("HTTP/1.1 200 OK", "html/hello.html")
-        } else if buffer.starts_with(sleep) {
+        } else if req.starts_with(sleep) {
             thread::sleep(Duration::from_secs(5));
             ("HTTP/1.1 200 OK", "html/hello.html")
         } else {
             ("HTTP/1.1 404 NOT FOUND", "html/404.html")
         };
 
-        let contents = fs::read_to_string(filename).unwrap();
+        let contents = fs::read_to_string(filename)?;
         let response = format!(
             "{}\r\nContent-Length: {}\r\n\r\n{}",
             status_line,
@@ -119,7 +124,8 @@ pub mod handle {
             contents
         );
 
-        stream.write(response.as_bytes()).unwrap();
-        stream.flush().unwrap();
+        stream.write_all(response.as_bytes())?;
+        stream.flush()?;
+        Ok(())
     }
 }
